@@ -1,0 +1,6 @@
+Ulaşabilme
+
+Erişilebilirlik kurallar herkes için daha iyi web siteleri ve uygulamalar oluşturun, kalmak için buradayız. Her devlet kılavuzlarının kendi belirledi, ancak çevrimiçi içerik için neredeyse devlet detaylarını çalıştı. Resmi mevzuat Web’de yayınlanan tüm içeriği kapsayan kadar takip etmek kurallar mantıklı kümesi olarak – ve AA seviyesi özellikle – En yasama Web İçeriği Erişilebilirlik Kılavuzu 2.0 anlamına gelir. ResponsiveVoice özellikle baskı devre dışı insanlar için, web sitenizin WİEK 2.0 uyumlu olmasına yardımcı ve disleksi, görme bozukluğu ve quadripleji dahil engellerin çeşitli muzdarip olanlar olabilir. Geçerli tarama deneyimi gereksiz zor ve sinir bozucu olma önlerinde birçok engel koyar. WİEK 2.0 standardı bu sorunu çözmek için kurulmuştur ve biz üzerimize düşeni yapmak için mutluyuz.
+Kullanım ve çok yönlülük kolaylığı
+
+Erişilebilirlik duyarlı tasarım için bir standart haline, biz tek bir kod satırı ile iletişim ve potansiyel gelir akışlarının yeni kanallar açıyor, sadece Türk konuşma metni değil, aynı zamanda diğer dillerde bir bereket sunan bir pazar kanıtlanmış bir çözüm, inşa etmişlerdir!

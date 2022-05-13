@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/">
+        <file>textFinder.txt</file>
+    </qresource>
+    <qresource prefix="/new/prefix1">
+        <file>textFinder.txt</file>
+    </qresource>
+</RCC>
