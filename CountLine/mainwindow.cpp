@@ -3,17 +3,22 @@
 #include "qtablewidget.h"
 #include "ui_mainwindow.h"
 #include "countline.h"
+#include <QtConcurrentRun>
+#include <QMutexLocker>
+#include <unistd.h>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
-
+    setReturnState(false);
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     ui->tableWidget->setColumnWidth(0, 782);
     ui->tableWidget->setColumnWidth(1, 150);
     ui->tableWidget->setColumnWidth(2, 150);
+    connect(this, &MainWindow::processFinished, this, &MainWindow::slotProcessFinished);
+    connect(this, &MainWindow::addItemToList, this, &MainWindow::slotAddItemToList);
 }
 
 MainWindow::~MainWindow()
@@ -21,7 +26,7 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::addItemToList(const QString &file, const int &fileSize, const int &count)
+void MainWindow::slotAddItemToList(const QString &file, const int &fileSize, const int &count)
 {
     QTableWidgetItem *iFileName = new QTableWidgetItem(file);
     QTableWidgetItem *iFileSize = new QTableWidgetItem(QString::number(fileSize));
@@ -44,6 +49,7 @@ QFileInfoList MainWindow::getFileListFromDir(const QString &directory)
 
     QString include = ui->lineEdit->text();
     QString except = ui->lineEdit2->text();
+
     QStringList includeList = include.split(QLatin1Char(';'));
     QStringList exceptList = except.split(QLatin1Char(';'));
 
@@ -53,20 +59,58 @@ QFileInfoList MainWindow::getFileListFromDir(const QString &directory)
     {
         for(const QFileInfo& filee: fileList)
         {
+            if(getReturnState())
+                break;
             if(file.fileName() == filee.fileName())
-            {
                 fileList.removeOne(filee);
-            }
         }
     }
 
     for(const QFileInfo &subDirectory : qdir.entryInfoList(QDir::AllDirs | QDir::NoDotAndDotDot))
     {
+        if(getReturnState())
+            break;
         fileList << getFileListFromDir(subDirectory.absoluteFilePath());
     }
 
-    ui->lineEdit->setText(ui->lineEdit->displayText());
     return fileList;
+}
+
+void MainWindow::process(const QString& path)
+{
+    QFileInfoList fileList = getFileListFromDir(path);
+
+    int count = 0; int sum = 0;
+    foreach(const QFileInfo& file, fileList)
+    {
+        if(getReturnState())
+            break;
+        count = m_ig->funcCountLines(file.filePath());
+        sum += count;
+        emit addItemToList(file.filePath(), file.size(), count);
+    }
+
+    setReturnState(false);
+    emit processFinished(sum);
+}
+
+bool MainWindow::getReturnState()
+{
+    QMutexLocker locker(&m_mutex);
+    return m_return;
+}
+
+void MainWindow::setReturnState(bool state)
+{
+    QMutexLocker locker(&m_mutex);
+    m_return = state;
+}
+
+void MainWindow::slotProcessFinished(int sum)
+{
+    ui->label->setText(QString::number(sum));
+    ui->Ok->setEnabled(true);
+    ui->cancel->setEnabled(false);
 }
 void MainWindow::on_Browse_clicked()
 {
@@ -84,15 +128,14 @@ void MainWindow::on_Ok_clicked()
     if(path.isEmpty())
         return;
 
+    ui->Ok->setEnabled(false);
+    ui->cancel->setEnabled(true);
     ui->tableWidget->setRowCount(0);
-    QFileInfoList fileList = getFileListFromDir(path);
 
-    int count = 0; int sum = 0;
-    foreach(const QFileInfo& file, fileList)
-    {
-        count = m_ig->funcCountLines(file.filePath());
-        addItemToList(file.filePath(), file.size(), count);
-        sum += count;
-    }
-    ui->label->setText(QString::number(sum));
+    QtConcurrent::run(this, &MainWindow::process, path);
+}
+
+void MainWindow::on_cancel_clicked()
+{
+    m_return = true;
 }
