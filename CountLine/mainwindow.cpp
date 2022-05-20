@@ -14,9 +14,11 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     setReturnState(false);
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+
     ui->tableWidget->setColumnWidth(0, 782);
     ui->tableWidget->setColumnWidth(1, 150);
     ui->tableWidget->setColumnWidth(2, 150);
+
     connect(this, &MainWindow::processFinished, this, &MainWindow::slotProcessFinished);
     connect(this, &MainWindow::addItemToList, this, &MainWindow::slotAddItemToList);
 }
@@ -28,9 +30,13 @@ MainWindow::~MainWindow()
 
 void MainWindow::slotAddItemToList(const QString &file, const int &fileSize, const int &count)
 {
-    QTableWidgetItem *iFileName = new QTableWidgetItem(file);
-    QTableWidgetItem *iFileSize = new QTableWidgetItem(QString::number(fileSize));
-    QTableWidgetItem *iFileCount = new QTableWidgetItem(QString::number(count));
+    QTableWidgetItem *iFileName = new QTableWidgetItem;
+    QTableWidgetItem *iFileSize = new QTableWidgetItem;
+    QTableWidgetItem *iFileCount = new QTableWidgetItem;
+
+    iFileName->setData(Qt::EditRole, file);
+    iFileSize->setData(Qt::EditRole, fileSize);
+    iFileCount->setData(Qt::EditRole, count);
 
     int rowCount = ui->tableWidget->rowCount();
 
@@ -73,14 +79,14 @@ QFileInfoList MainWindow::getFileListFromDir(const QString &directory)
         fileList << getFileListFromDir(subDirectory.absoluteFilePath());
     }
 
-    return fileList;
+    return fileList;    
 }
 
 void MainWindow::process(const QString& path)
 {
     QFileInfoList fileList = getFileListFromDir(path);
 
-    int count = 0; int sum = 0;
+    int count = 0; int sum = 0; int totalFiles = fileList.count();
     foreach(const QFileInfo& file, fileList)
     {
         if(getReturnState())
@@ -89,9 +95,13 @@ void MainWindow::process(const QString& path)
         sum += count;
         emit addItemToList(file.filePath(), file.size(), count);
     }
-
+    if(m_return)
+    {
+        totalFiles = 0;
+    }
     setReturnState(false);
-    emit processFinished(sum);
+
+    emit processFinished(sum, totalFiles);
 }
 
 bool MainWindow::getReturnState()
@@ -106,16 +116,18 @@ void MainWindow::setReturnState(bool state)
     m_return = state;
 }
 
-void MainWindow::slotProcessFinished(int sum)
+void MainWindow::slotProcessFinished(int sum, int totalFile)
 {
+    ui->label_6->setText(QString::number(totalFile));
     ui->label->setText(QString::number(sum));
     ui->Ok->setEnabled(true);
     ui->cancel->setEnabled(false);
 }
+
 void MainWindow::on_Browse_clicked()
 {
     QString path = QFileDialog::getExistingDirectory(this, tr("Open Directory"), "/home/efe/Desktop/build-SatirSay-Unnamed2-Release", QFileDialog::ShowDirsOnly |
-                                                                                             QFileDialog::DontResolveSymlinks);
+                                                                                                                                      QFileDialog::DontResolveSymlinks);
     if(path.isEmpty())
         return;
 
@@ -139,3 +151,4 @@ void MainWindow::on_cancel_clicked()
 {
     m_return = true;
 }
+
