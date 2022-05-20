@@ -27,11 +27,11 @@ public:
     void setReturnState(bool state);
 
 signals:
-    void processFinished(int sum);
+    void processFinished(int sum, int totalFiles);
     void addItemToList(const QString& file, const int& fileSize, const int& count);
 
 public slots:
-    void slotProcessFinished(int sum);
+    void slotProcessFinished(int sum, int totalFiles);
     void slotAddItemToList(const QString& file, const int& fileSize, const int& count);
 
 private:
