@@ -9,7 +9,6 @@
 #include <QtConcurrentRun>
 #include <QMutex>
 
-
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -34,6 +33,7 @@ signals:
 public slots:
     void slotProcessFinished(int sum);
     void slotAddItemToList(const QString& file, const int& fileSize, const int& count);
+
 private:
     bool m_return;
     QMutex m_mutex;
