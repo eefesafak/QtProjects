@@ -6,6 +6,7 @@
 #include <QtConcurrentRun>
 #include <QMutexLocker>
 #include <unistd.h>
+#include <QSettings>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -21,6 +22,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(this, &MainWindow::processFinished, this, &MainWindow::slotProcessFinished);
     connect(this, &MainWindow::addItemToList, this, &MainWindow::slotAddItemToList);
+
+    LoadSettings();
 }
 
 MainWindow::~MainWindow()
@@ -47,6 +50,24 @@ void MainWindow::slotAddItemToList(const QString &file, const int &fileSize, con
     ui->tableWidget->setItem(rowCount-1, 0, iFileName);
     ui->tableWidget->setItem(rowCount-1, 1, iFileSize);
     ui->tableWidget->setItem(rowCount-1, 2, iFileCount);
+}
+
+void MainWindow::SaveSettings()
+{
+    QSettings setting;
+
+    setting.setValue("lineEdit", ui->lineEdit->text());
+    setting.setValue("lineEdit2", ui->lineEdit2->text());
+    setting.setValue("fullPath", ui->FullPath->text());
+}
+
+void MainWindow::LoadSettings()
+{
+    QSettings setting;
+
+    ui->lineEdit->setText(setting.value("lineEdit").toString());
+    ui->lineEdit2->setText(setting.value("lineEdit2").toString());
+    ui->FullPath->setText(setting.value("fullPath").toString());
 }
 
 QFileInfoList MainWindow::getFileListFromDir(const QString &directory)
@@ -100,7 +121,7 @@ void MainWindow::process(const QString& path)
         totalFiles = 0;
     }
     setReturnState(false);
-
+    SaveSettings();
     emit processFinished(sum, totalFiles);
 }
 
@@ -126,8 +147,8 @@ void MainWindow::slotProcessFinished(int sum, int totalFile)
 
 void MainWindow::on_Browse_clicked()
 {
-    QString path = QFileDialog::getExistingDirectory(this, tr("Open Directory"), "/home/efe/Desktop/build-SatirSay-Unnamed2-Release", QFileDialog::ShowDirsOnly |
-                                                                                                                                      QFileDialog::DontResolveSymlinks);
+    QString path = QFileDialog::getExistingDirectory(this, tr("Open Directory"), "/home/efe", QFileDialog::ShowDirsOnly |
+                                                                                              QFileDialog::DontResolveSymlinks);
     if(path.isEmpty())
         return;
 
@@ -151,4 +172,3 @@ void MainWindow::on_cancel_clicked()
 {
     m_return = true;
 }
-
