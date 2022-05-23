@@ -35,10 +35,13 @@ public slots:
     void slotAddItemToList(const QString& file, const int& fileSize, const int& count);
 
 private:
+    void SaveSettings();
+    void LoadSettings();
     bool m_return;
     QMutex m_mutex;
     Ui::MainWindow *ui;
     countLine* m_ig;
+
 
 private slots:
     void on_Browse_clicked();
