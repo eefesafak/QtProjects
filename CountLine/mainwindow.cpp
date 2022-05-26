@@ -7,12 +7,17 @@
 #include <QMutexLocker>
 #include <unistd.h>
 #include <QSettings>
+#include <QProgressBar>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
 {
     ui->setupUi(this);
+
+    ui->progressBar->setRange(0, 0);
+    ui->progressBar->setVisible(false);
+    ui->cancel->setVisible(false);
     setReturnState(false);
     ui->tableWidget->horizontalHeader()->setSectionResizeMode(QHeaderView::Fixed);
 
@@ -121,7 +126,9 @@ void MainWindow::process(const QString& path)
         totalFiles = 0;
     }
     setReturnState(false);
+
     SaveSettings();
+    ui->progressBar->setVisible(false);
     emit processFinished(sum, totalFiles);
 }
 
@@ -141,13 +148,15 @@ void MainWindow::slotProcessFinished(int sum, int totalFile)
 {
     ui->label_6->setText(QString::number(totalFile));
     ui->label->setText(QString::number(sum));
-    ui->Ok->setEnabled(true);
-    ui->cancel->setEnabled(false);
+    ui->Ok->setVisible(true);
+    ui->cancel->setVisible(false);
+    float time = (float)m_timer.elapsed() / 1000;
+    ui->label_7->setText(QString::number(time) + " Second");
 }
 
 void MainWindow::on_Browse_clicked()
 {
-    QString path = QFileDialog::getExistingDirectory(this, tr("Open Directory"), "/home/efe", QFileDialog::ShowDirsOnly |
+    QString path = QFileDialog::getExistingDirectory(this, tr("Open Directory"), "/home/", QFileDialog::ShowDirsOnly |
                                                                                               QFileDialog::DontResolveSymlinks);
     if(path.isEmpty())
         return;
@@ -160,15 +169,19 @@ void MainWindow::on_Ok_clicked()
     QString path = ui->FullPath->text();
     if(path.isEmpty())
         return;
-
-    ui->Ok->setEnabled(false);
-    ui->cancel->setEnabled(true);
+    ui->Ok->setVisible(false);
+    ui->progressBar->setVisible(true);
+    ui->cancel->setVisible(true);
     ui->tableWidget->setRowCount(0);
-
+    //basla
+    m_timer.start();
     QtConcurrent::run(this, &MainWindow::process, path);
+
 }
 
 void MainWindow::on_cancel_clicked()
 {
+    ui->progressBar->setVisible(true);
     m_return = true;
 }
+
