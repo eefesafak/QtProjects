@@ -8,6 +8,7 @@
 #include <QFileDialog>
 #include <QtConcurrentRun>
 #include <QMutex>
+#include <QElapsedTimer>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -25,6 +26,8 @@ public:
     void process(const QString& path);
     bool getReturnState();
     void setReturnState(bool state);
+    void SaveSettings();
+    void LoadSettings();
 
 signals:
     void processFinished(int sum, int totalFiles);
@@ -35,14 +38,12 @@ public slots:
     void slotAddItemToList(const QString& file, const int& fileSize, const int& count);
 
 private:
-    void SaveSettings();
-    void LoadSettings();
+    Ui::MainWindow *ui;
     bool m_return;
     QMutex m_mutex;
-    Ui::MainWindow *ui;
     countLine* m_ig;
-
-
+    QElapsedTimer m_timer;
+    
 private slots:
     void on_Browse_clicked();
     void on_Ok_clicked();
